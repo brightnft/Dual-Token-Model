@@ -3,10 +3,9 @@ pragma solidity ^0.8.25;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract YointsStaking is Ownable, ReentrancyGuard {
+contract YointsStaking {
   using SafeERC20 for IERC20;
 
   struct Stake {
@@ -58,11 +57,11 @@ contract YointsStaking is Ownable, ReentrancyGuard {
     lastRewardTime = block.timestamp;
   }
 
-  function depositRewards(uint256 amount) external onlyOwner {
+  function depositRewards(uint256 amount) external /*onlyOwner*/ {
     yapesToken.safeTransferFrom(msg.sender, address(this), amount);
   }
 
-  function stake(uint256 _amount) external nonReentrant {
+  function stake(uint256 _amount) external /*nonReentrant*/ {
     require(_amount > 0, "Cannot stake 0 tokens");
     Stake storage userStake = stakes[msg.sender];
     updatePool();
@@ -80,7 +79,7 @@ contract YointsStaking is Ownable, ReentrancyGuard {
     emit StakeAdded(msg.sender, _amount);
   }
 
-  function unstake(uint256 _amount) external nonReentrant {
+  function unstake(uint256 _amount) external /*nonReentrant*/ {
     Stake storage userStake = stakes[msg.sender];
     require(block.timestamp >= userStake.lastStakedTime + lockupDuration, "Tokens are locked");
     require(userStake.amount >= _amount, "Not enough staked");
@@ -96,7 +95,7 @@ contract YointsStaking is Ownable, ReentrancyGuard {
     emit StakeRemoved(msg.sender, _amount);
   }
 
-  function claimReward() external nonReentrant {
+  function claimReward() external /*nonReentrant*/ {
     require(rewardsActive, "Rewards are not active.");
     Stake storage userStake = stakes[msg.sender];
     // require(
@@ -120,14 +119,14 @@ contract YointsStaking is Ownable, ReentrancyGuard {
     return ((userStake.amount * accYapesPerShare) / 1e12) - userStake.rewardDebt;
   }
 
-  function startRewards() external onlyOwner {
+  function startRewards() external /*onlyOwner*/ {
     require(!rewardsActive, "Rewards already started.");
     rewardsActive = true;
     lastRewardTime = block.timestamp; // Reset the last reward time to now
     emit RewardsStarted(block.timestamp);
   }
 
-  function stopRewards() external onlyOwner {
+  function stopRewards() external /*onlyOwner*/ {
     require(rewardsActive, "Rewards already stopped.");
     rewardsActive = false;
     updatePool(); // Final update before stopping

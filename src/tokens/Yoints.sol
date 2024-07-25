@@ -19,7 +19,7 @@ contract Yoints is ERC20, Ownable {
   uint256 public constant INITIAL_SUPPLY = 100_000_000 * (10 ** 18);
 
   /// @notice Constructs the Yoints Token
-  constructor(address bpAddr_) ERC20("YOINTS Token", "YOINTS") {
+  constructor(address bpAddr_) ERC20("YOINTS Token", "YOINTS") Ownable(_msgSender()) {
     _mint(_msgSender(), INITIAL_SUPPLY);
     bpAddr = bpAddr_;
     isEnableBP = true;
@@ -47,7 +47,7 @@ contract Yoints is ERC20, Ownable {
   /// @param amount Amount of tokens to transfer
   /// @return A boolean that indicates if the operation was successful.
   function transfer(address recipient, uint256 amount) public override returns (bool) {
-    _transfer(_msgSender(), recipient, amount);
+    _transferToken(_msgSender(), recipient, amount);
     return true;
   }
 
@@ -63,12 +63,12 @@ contract Yoints is ERC20, Ownable {
       _approve(sender, _msgSender(), currentAllowance - amount);
     }
 
-    _transfer(sender, recipient, amount);
+    _transferToken(sender, recipient, amount);
     return true;
   }
 
-  /// @dev overrides transfer function to meet tokenomics of SIP
-  function _transfer(address sender, address recipient, uint256 amount) internal virtual override {
+  /// @dev overrides transfer function to meet tokenomics
+  function _transferToken(address sender, address recipient, uint256 amount) internal {
     require(amount > 0, "amount is zero");
 
     if (recipient == BURN_ADDRESS) {
@@ -82,6 +82,6 @@ contract Yoints is ERC20, Ownable {
     }
 
     // Transfer all the amount
-    super._transfer(sender, recipient, amount);
+    _transfer(sender, recipient, amount);
   }
 }

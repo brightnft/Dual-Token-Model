@@ -17,8 +17,8 @@ contract BotPreventionBlacklist is IPrevention, Ownable, AccessControl {
     bool isRouter;
   }
 
-  constructor() {
-    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+  constructor() Ownable(_msgSender()) {
+    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }
 
   event AddBlackListEvent(address[] _blacklistAddress);
@@ -107,7 +107,7 @@ contract BotPreventionBlacklist is IPrevention, Ownable, AccessControl {
     address receiver,
     uint256 /* amount */
   ) external view override onlyRole(PROTECTED_ROLE) {
-    require(!isBlacklist[sender] && !isBlacklist[receiver], "BL - contact SIP");
+    require(!isBlacklist[sender] && !isBlacklist[receiver], "BL - contact support");
 
     if (!isActiveTrading) {
       AddressReputation storage senderReputation = addressReputationMap[sender];

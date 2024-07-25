@@ -2,7 +2,7 @@
 pragma solidity ^0.8.25;
 
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 // Note: Since the contract has activeTrading disabled by default, we can remove blacklisting functionality
@@ -22,7 +22,7 @@ contract Yapes is ERC20, Ownable, ReentrancyGuard {
   uint256 public immutable deploymentTime;
 
   /// @notice Constructs the Yapes Token
-  constructor() ERC20("YAPES Token", "YAPES") {
+  constructor() ERC20("YAPES Token", "YAPES") Ownable(_msgSender()) {
     _mint(_msgSender(), INITIAL_SUPPLY);
     deploymentTime = block.timestamp;
   }
