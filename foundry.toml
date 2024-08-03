@@ -34,5 +34,5 @@ tab_width = 4
 wrap_comments = true
 
 [rpc_endpoints]
-metis_sepolia = "https://arbitrum-mainnet.infura.io/v3/${API_KEY_INFURA}"
+metis_sepolia = "https://sepolia.metisdevops.link"
 metis_andromeda = "https://andromeda.metis.io/?owner=1088"

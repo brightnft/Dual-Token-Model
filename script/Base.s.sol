@@ -1,41 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { Script } from "forge-std/src/Script.sol";
+import { Script } from "forge-std/Script.sol";
 
-abstract contract BaseScript is Script {
-  /// @dev Included to enable compilation of the script without a $MNEMONIC environment variable.
-  string internal constant TEST_MNEMONIC = "test test test test test test test test test test test junk";
+contract BaseScript is Script {
+  uint256 public constant METIS_SEPOLIA = 59902;
+  uint256 public constant METIS_ANDROMEDA = 1088;
 
-  /// @dev Needed for the deterministic deployments.
-  bytes32 internal constant ZERO_SALT = bytes32(0);
-
-  /// @dev The address of the transaction broadcaster.
-  address internal broadcaster;
-
-  /// @dev Used to derive the broadcaster's address if $ETH_FROM is not defined.
-  string internal mnemonic;
-
-  /// @dev Initializes the transaction broadcaster like this:
-  ///
-  /// - If $ETH_FROM is defined, use it.
-  /// - Otherwise, derive the broadcaster address from $MNEMONIC.
-  /// - If $MNEMONIC is not defined, default to a test mnemonic.
-  ///
-  /// The use case for $ETH_FROM is to specify the broadcaster key and its address via the command line.
-  constructor() {
-    address from = vm.envOr({ name: "ETH_FROM", defaultValue: address(0) });
-    if (from != address(0)) {
-      broadcaster = from;
+  function get_pk() public view returns (uint256) {
+    if (block.chainid == METIS_SEPOLIA) {
+      return vm.envUint("METIS_SEPOLIA");
     } else {
-      mnemonic = vm.envOr({ name: "MNEMONIC", defaultValue: TEST_MNEMONIC });
-      (broadcaster, ) = deriveRememberKey({ mnemonic: mnemonic, index: 0 });
+      return vm.envUint("METIS_ANDROMEDA");
     }
-  }
-
-  modifier broadcast() {
-    vm.startBroadcast(broadcaster);
-    _;
-    vm.stopBroadcast();
   }
 }
