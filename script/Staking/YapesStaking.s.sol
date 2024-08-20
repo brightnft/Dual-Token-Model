@@ -3,8 +3,9 @@ pragma solidity ^0.8.25;
 
 import "forge-std/console.sol";
 import { BaseScript } from "../Base.s.sol";
+import { ArbSys } from "../../src/staking/ArbSys.sol";
 
-contract YapesStakingDeployScript is BaseScript {
+contract YapesStakingScript is BaseScript {
   function run() external {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);

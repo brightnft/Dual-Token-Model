@@ -19,7 +19,7 @@ contract Yapes is ERC20, Ownable {
   uint256 public constant INITIAL_SUPPLY = 100_000_000 * (10 ** 18);
 
   /// @notice Constructs the Yoints Token
-  constructor(address bpAddr_) ERC20("YOINTS Token", "YOINTS") Ownable(_msgSender()) {
+  constructor(address bpAddr_) ERC20("YAPES Token", "YAPES") Ownable(_msgSender()) {
     _mint(_msgSender(), INITIAL_SUPPLY);
     bpAddr = bpAddr_;
     isEnableBP = true;

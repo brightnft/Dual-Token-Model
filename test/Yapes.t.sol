@@ -13,7 +13,7 @@ contract YapesTest is Test {
   Yapes yapes;
 
   function setUp() public {
-    // deploy bp
+    // deploy blacklist prevention
     bp = new BlacklistPrevention();
 
     // deploy yapes
@@ -23,7 +23,7 @@ contract YapesTest is Test {
     yapes.setEnableBP(false);
   }
 
-  function testConfiguration() public {
+  function testConfiguration() public view {
     assertEq(yapes.decimals(), uint8(18));
     assertEq(yapes.isEnableBP(), false);
     assertEq(yapes.bpAddr(), address(bp));

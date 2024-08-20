@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.25 <0.9.0;
 
-import { Script } from "forge-std/Script.sol";
+import "../lib/forge-std/src/Script.sol";
 
 contract BaseScript is Script {
   uint256 public constant METIS_SEPOLIA = 59902;
