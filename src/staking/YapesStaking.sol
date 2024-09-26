@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "./ArbSys.sol";
+import { ArbSys } from "./ArbSys.sol";
 
-contract YointsStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable {
+contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable {
   using SafeERC20 for IERC20;
 
   bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -70,7 +70,7 @@ contract YointsStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpg
 
     rewardToken = IERC20(_rewardToken);
     rewardPerBlock = _rewardPerBlock;
-    lockingBlock = 672; // 7 days
+    lockingBlock = 50400; // 7 days
 
     _grantRole(ADMIN_ROLE, _msgSender());
 
@@ -236,6 +236,7 @@ contract YointsStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpg
     updatePool(_pid);
     uint256 pending = ((user.amount * pool.accCakePerShare) / 1e12) - user.rewardDebt;
     if (pending > 0 && !user.inBlackList) {
+      require(rewardToken.balanceOf(address(this)) >= pending, "not enough reward");
       rewardToken.safeTransfer(_msgSender(), pending);
     }
 
