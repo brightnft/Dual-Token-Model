@@ -199,7 +199,7 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
   }
 
   // Stake tokens to SmartChef
-  function deposit(uint256 _pid, uint256 amount) external {
+  function deposit(uint256 _pid, uint256 amount) external whenNotPaused {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_msgSender()][_pid];
 
@@ -210,6 +210,7 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     if (user.amount > 0) {
       uint256 pending = ((user.amount * pool.accCakePerShare) / 1e12) - user.rewardDebt;
       if (pending > 0) {
+        require(rewardToken.balanceOf(address(this)) >= pending, "not enough reward");
         rewardToken.safeTransfer(_msgSender(), pending);
       }
     }
@@ -226,12 +227,14 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
   }
 
   // Withdraw tokens from STAKING.
-  function withdraw(uint256 _pid, uint256 _amount) external {
+  function withdraw(uint256 _pid, uint256 _amount) external whenNotPaused {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_msgSender()][_pid];
 
     require(user.amount >= _amount, "withdraw: not good");
-    require(arbsys.arbBlockNumber() >= user.lastDeposit + lockingBlock, "must over 7 days");
+    if (arbsys.arbBlockNumber() <= pool.bonusEndBlock) {
+      require(arbsys.arbBlockNumber() >= user.lastDeposit + lockingBlock, "must over 7 days");
+    }
 
     updatePool(_pid);
     uint256 pending = ((user.amount * pool.accCakePerShare) / 1e12) - user.rewardDebt;
@@ -251,13 +254,14 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
   }
 
   // Harvest tokens from STAKING.
-  function harvest(uint256 _pid) external {
+  function harvest(uint256 _pid) external whenNotPaused {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_msgSender()][_pid];
 
     updatePool(_pid);
     uint256 pending = ((user.amount * pool.accCakePerShare) / 1e12) - user.rewardDebt;
     if (pending > 0 && !user.inBlackList) {
+      require(rewardToken.balanceOf(address(this)) >= pending, "not enough reward");
       rewardToken.safeTransfer(_msgSender(), pending);
     }
 
@@ -267,13 +271,14 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
   }
 
   // Withdraw without caring about rewards. EMERGENCY ONLY.
-  function emergencyWithdraw(uint256 _pid) public {
+  function emergencyWithdraw(uint256 _pid) external {
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_msgSender()][_pid];
     pool.lpToken.safeTransfer(_msgSender(), user.amount);
     emit EmergencyWithdraw(_msgSender(), user.amount);
     user.amount = 0;
     user.rewardDebt = 0;
+    user.totalStaked -= user.amount;
   }
 
   // Withdraw reward. EMERGENCY ONLY.
