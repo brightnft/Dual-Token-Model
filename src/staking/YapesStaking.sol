@@ -191,6 +191,14 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     pool.lastRewardBlock = arbsys.arbBlockNumber();
   }
 
+  // Update the total allocation points to be accurate
+  function unwindPool(uint256 _pid) public {
+    PoolInfo storage pool = poolInfo[_pid];
+    require(arbsys.arbBlockNumber() > pool.lastRewardBlock, "not expired");
+
+    totalAllocPoint -= pool.allocPoint;
+  }
+
   // Update reward variables for all pools. Be careful of gas spending!
   function massUpdatePools() public {
     uint256 length = poolInfo.length;
