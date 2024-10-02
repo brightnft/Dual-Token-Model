@@ -89,7 +89,8 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     totalAllocPoint = 1000;
   }
 
-  // create a new pool. no need to update deposit and reward address
+  /// create a new pool. no need to update deposit and reward address
+  /// @notice to avoid rewards being messed up, the LP token should be unique for each pool
   function createNewPool(
     address _lp,
     uint256 _startBlock,
@@ -278,12 +279,12 @@ contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgr
     emit EmergencyWithdraw(_msgSender(), user.amount);
     user.amount = 0;
     user.rewardDebt = 0;
-    user.totalStaked -= user.amount;
+    totalStaked -= user.amount;
   }
 
   // Withdraw reward. EMERGENCY ONLY.
   function emergencyRewardWithdraw(uint256 _amount) external onlyRole(ADMIN_ROLE) {
-    require(_amount < rewardToken.balanceOf(address(this)), "not enough token");
+    require(_amount <= rewardToken.balanceOf(address(this)), "not enough token");
     rewardToken.safeTransfer(_msgSender(), _amount);
   }
 
