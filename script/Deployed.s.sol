@@ -29,7 +29,7 @@ library Deployed {
     return address(0x0);
   }
 
-  function yapesStaking() public view returns (address) {
+  function yapesYieldFarming() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
       return address(0x6858a6c3484b7b033B748261e550FC20c479b063);
     }

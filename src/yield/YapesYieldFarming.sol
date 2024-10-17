@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.25;
 
-import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import { ArbSys } from "./ArbSys.sol";
 
-contract YapesStaking is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable {
+contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable {
   using SafeERC20 for IERC20;
 
   bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
