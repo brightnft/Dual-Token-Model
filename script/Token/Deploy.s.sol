@@ -14,10 +14,12 @@ contract YapesDeployScript is BaseScript {
     vm.startBroadcast(deployerPrivateKey);
 
     // deploy blacklist prevention
+    // 1.
     BlacklistPrevention bp = new BlacklistPrevention();
     console.log("BlacklistPrevention is deployed to %s", address(bp));
 
     // deploy yapes token
+    // 1.
     Yapes yapes = new Yapes(address(bp));
     console.log("Yapes is deployed to %s", address(yapes));
 

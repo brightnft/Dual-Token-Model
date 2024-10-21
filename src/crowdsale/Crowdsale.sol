@@ -2,8 +2,10 @@
 pragma solidity ^0.8.25;
 
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
+import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 interface Aggregator {
   function latestRoundData()
@@ -12,7 +14,7 @@ interface Aggregator {
     returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
   function decimals() external view returns (uint8);
 }
-contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
+contract Crowdsale is UUPSUpgradeable, AccessControlUpgradeable, OwnableUpgradeable, PausableUpgradeable {
   uint256 public tokenPrice;
   uint256 public totalTokensSold;
   uint256 public maxTokensToSell;
@@ -23,6 +25,7 @@ contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
   uint256 public usdRaised;
   address public paymentWallet;
 
+  bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
   Aggregator public aggregatorInterface;
 
   mapping(address => uint256) public userDeposits;
@@ -41,7 +44,7 @@ contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
 
   /**
    * @dev Initializes the contract and sets key parameters
-   * @param _oracle Oracle contract to fetch metis/USDT price
+   * @param _oracle Oracle contract to fetch metis/USDT price (Witnet)
    * @param _tokenPrice presale price of the token
    * @param _startTime start time of the presale
    * @param _endTime end time of the presale
@@ -60,8 +63,14 @@ contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
   ) external initializer {
     require(_oracle != address(0), "Zero aggregator address");
     require(_startTime > block.timestamp && _endTime > _startTime, "Invalid time");
+
     __Pausable_init_unchained();
     __Ownable_init_unchained(_msgSender());
+    __AccessControl_init_unchained();
+    __UUPSUpgradeable_init();
+
+    _grantRole(ADMIN_ROLE, _msgSender());
+
     baseDecimals = (10 ** 18);
     aggregatorInterface = Aggregator(_oracle);
     tokenPrice = _tokenPrice;
@@ -70,6 +79,7 @@ contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
     maxTokensToSell = _maxTokensToSell;
     maxTokensToBuy = _maxTokensToBuy;
     paymentWallet = _paymentWallet;
+
     emit SaleTimeSet(startTime, endTime, block.timestamp);
   }
 
@@ -187,4 +197,6 @@ contract Crowdsale is Initializable, OwnableUpgradeable, PausableUpgradeable {
   function setTokenPrice(uint256 _tokenPrice) external onlyOwner {
     tokenPrice = _tokenPrice;
   }
+
+  function _authorizeUpgrade(address) internal override onlyRole(ADMIN_ROLE) {}
 }

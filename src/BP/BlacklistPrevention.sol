@@ -18,7 +18,7 @@ contract BlacklistPrevention is IPrevention, Ownable, AccessControl {
   }
 
   constructor() Ownable(_msgSender()) {
-    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+    _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
   }
 
   event AddBlackListEvent(address[] _blacklistAddress);
@@ -27,6 +27,10 @@ contract BlacklistPrevention is IPrevention, Ownable, AccessControl {
   event RemoveWhitelistEvent(address[] _whitelistAddress);
   event AddRoutersEvent(address[] _routerAddresses);
   event RemoveRoutersEvent(address[] _routerAddresses);
+
+  function setActiveTrading(bool _isActiveTrading) external onlyOwner {
+    isActiveTrading = _isActiveTrading;
+  }
 
   function addBlacklist(address[] calldata _blacklistAddress) external onlyOwner {
     require(_blacklistAddress.length > 0, "length > 0");

@@ -23,7 +23,7 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
   EnumerableSet.AddressSet private _signers;
   mapping(bytes32 => bool) public _usedNonce;
 
-  event Tip(address sender, address author, uint256 postId, uint256 amount);
+  event Tip(address sender, address author, uint256 amount);
 
   /**
    * @dev Initializes the contract and sets key parameters
@@ -69,10 +69,10 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
    * @dev To tip author using Yapes
    * @param amount No of Yapes tokens
    */
-  function tip(address authorAddress, uint256 postId, uint256 amount, bytes calldata signature) external {
+  function tip(address authorAddress, uint256 amount, bytes calldata signature) external {
     require(authorAddress != address(0), "invalid address");
     require(amount > 0, "invalid amount");
-    bytes32 message = _getHashMsg(authorAddress, postId, amount);
+    bytes32 message = _getHashMsg(authorAddress, amount);
     _validateSignature(message, signature);
 
     // take fee
@@ -89,11 +89,11 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
     uint256 remainingAmount = amount - feeAmount;
     yapes.transferFrom(_msgSender(), authorAddress, remainingAmount);
 
-    emit Tip(_msgSender(), authorAddress, postId, amount);
+    emit Tip(_msgSender(), authorAddress, amount);
   }
 
-  function _getHashMsg(address authorAddress, uint256 postId, uint256 amount) internal view returns (bytes32 message) {
-    message = keccak256(abi.encodePacked(authorAddress, postId, amount, _msgSender()));
+  function _getHashMsg(address authorAddress, uint256 amount) internal view returns (bytes32 message) {
+    message = keccak256(abi.encodePacked(authorAddress, amount, _msgSender()));
   }
 
   function _validateSignature(bytes32 message, bytes calldata signature) internal {

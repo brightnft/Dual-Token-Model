@@ -28,4 +28,8 @@ contract Yoints is ERC20Votes, ERC20Permit, Ownable {
   function burn(address from, uint256 amount) external onlyOwner {
     super._burn(from, amount);
   }
+
+  function delegate(address delegatee) public virtual override {
+    _delegate(_msgSender(), delegatee);
+  }
 }
