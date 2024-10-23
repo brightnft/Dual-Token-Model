@@ -18,6 +18,7 @@ contract YapesStaking is Ownable, AccessControl, Pausable {
 
   event Stake(address sender, uint256 amount);
   event UnStake(address sender, uint256 amount);
+  event EmergencyWithdraw(address sender, uint256 amount);
 
   constructor(address _yapesToken, address _yointsToken) Ownable(_msgSender()) {
     yapesToken = ERC20(_yapesToken);
@@ -60,22 +61,29 @@ contract YapesStaking is Ownable, AccessControl, Pausable {
   }
 
   // Unstake Yapes tokens and burn Yoints
-  function unstake(uint256 YointsAmount) external whenNotPaused {
-    require(yointsToken.balanceOf(_msgSender()) >= YointsAmount, "Insufficient Yoints");
+  function unstake(uint256 yointsAmount) external whenNotPaused {
+    require(yointsToken.balanceOf(_msgSender()) >= yointsAmount, "Insufficient Yoints");
 
     // Calculate Yapes to return based on the ratio
-    uint256 YapesToReturn = (YointsAmount * totalYapesStaked) / yointsToken.totalSupply();
+    uint256 yapesToReturn = (yointsAmount * totalYapesStaked) / yointsToken.totalSupply();
 
     // Burn Yoints tokens
-    yointsToken.burn(_msgSender(), YointsAmount);
+    yointsToken.burn(_msgSender(), yointsAmount);
 
     // Transfer Yapes back to the user
-    yapesToken.transfer(_msgSender(), YapesToReturn);
+    yapesToken.transfer(_msgSender(), yapesToReturn);
 
     // Update total staked
-    totalYapesStaked -= YapesToReturn;
+    totalYapesStaked -= yapesToReturn;
 
-    emit Stake(_msgSender(), YapesToReturn);
+    emit Stake(_msgSender(), yapesToReturn);
+  }
+
+  // Withdraw $Yapes. EMERGENCY ONLY.
+  function emergencyWithdraw() external onlyOwner {
+    uint256 amount = yapesToken.balanceOf(address(this));
+    yapesToken.transfer(_msgSender(), amount);
+    emit EmergencyWithdraw(_msgSender(), amount);
   }
 
   // Add Yapes tokens as fees (increases Yoints value)
