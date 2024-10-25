@@ -36,4 +36,16 @@ library Deployed {
 
     return address(0x0);
   }
+
+  function routers() public view returns (address[] memory) {
+    address[] memory r = new address[](1);
+
+    if (block.chainid == METIS_SEPOLIA) {
+      r[0] = address(0x0);
+      return r;
+    }
+
+    r[0] = address(0x14679D1Da243B8c7d1A4c6d0523A2Ce614Ef027C);
+    return r;
+  }
 }
