@@ -7,14 +7,32 @@ import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol"
 import { Pausable } from "@openzeppelin/contracts/utils/Pausable.sol";
 
 import { Yoints } from "../tokens/Yoints.sol";
+import { ArbSys } from "../yield/ArbSys.sol";
 
 contract YapesStaking is Ownable, AccessControl, Pausable {
   ERC20 public yapesToken; // Yapes token
   Yoints public yointsToken; // Yoints token
+
   uint256 public totalYapesStaked; // total Yapes tokens staked
   uint256 public feeYapesAdded; // track fee Yapes tokens added
 
   bytes32 private constant TRANSFER_ROLE = keccak256("TRANSFER_ROLE");
+
+  // Metis precompile, used to send messages to L1
+  ArbSys constant arbsys = ArbSys(address(0x4200000000000000000000000000000000000013));
+
+  // Info of each user that stakes Yapes tokens.
+  mapping(address user => UserInfo info) public userInfo;
+
+  // Info of each user.
+  struct UserInfo {
+    uint256 amount; // How many Yapes tokens the user has provided.
+    uint256 lastDeposit; // The last block user deposits
+    bool inBlackList;
+  }
+
+  // Depositor's money is only withdrawn after the current block + locking block
+  uint256 public lockingBlock;
 
   event Stake(address sender, uint256 amount);
   event UnStake(address sender, uint256 amount);
@@ -39,12 +57,31 @@ contract YapesStaking is Ownable, AccessControl, Pausable {
     _unpause();
   }
 
+  function setLockingBlock(uint256 _lockingBlock) external onlyOwner {
+    lockingBlock = _lockingBlock;
+  }
+
+  function setBlackList(address _blacklistAddress) external onlyOwner {
+    userInfo[_blacklistAddress].inBlackList = true;
+  }
+
+  function removeBlackList(address _blacklistAddress) external onlyOwner {
+    userInfo[_blacklistAddress].inBlackList = false;
+  }
+
   // Stake Yapes tokens and mint Yoints
   function stake(uint256 amount) external whenNotPaused {
     require(amount > 0, "Amount must be greater than zero");
 
+    UserInfo storage user = userInfo[_msgSender()];
+    require(!user.inBlackList, "in black list");
+
     // Transfer Yapes tokens to the contract
     yapesToken.transferFrom(_msgSender(), address(this), amount);
+
+    // Store the deposit time + amount for user
+    user.amount += amount;
+    user.lastDeposit = arbsys.arbBlockNumber();
 
     // Calculate Yoints to mint based on current staking ratio
     uint256 YointsToMint = (yointsToken.totalSupply() == 0)
@@ -63,6 +100,11 @@ contract YapesStaking is Ownable, AccessControl, Pausable {
   // Unstake Yapes tokens and burn Yoints
   function unstake(uint256 yointsAmount) external whenNotPaused {
     require(yointsToken.balanceOf(_msgSender()) >= yointsAmount, "Insufficient Yoints");
+
+    UserInfo storage user = userInfo[_msgSender()];
+
+    require(!user.inBlackList, "in black list");
+    require(arbsys.arbBlockNumber() >= user.lastDeposit + lockingBlock, "in locking time");
 
     // Calculate Yapes to return based on the ratio
     uint256 yapesToReturn = (yointsAmount * totalYapesStaked) / yointsToken.totalSupply();

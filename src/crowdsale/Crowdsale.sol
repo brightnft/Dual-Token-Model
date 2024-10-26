@@ -5,7 +5,7 @@ import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils
 import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import { OwnableUpgradeable } from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import { ERC20Upgradeable } from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 interface Aggregator {
   function latestRoundData()
@@ -27,8 +27,9 @@ contract Crowdsale is UUPSUpgradeable, AccessControlUpgradeable, OwnableUpgradea
 
   bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
   Aggregator public aggregatorInterface;
+  ERC20Upgradeable public USDTInterface;
 
-  mapping(address => uint256) public userDeposits;
+  mapping(address user => uint256 amount) public userDeposits;
 
   event SaleTimeSet(uint256 _start, uint256 _end, uint256 timestamp);
   event SaleTimeUpdated(bytes32 indexed key, uint256 prevValue, uint256 newValue, uint256 timestamp);
@@ -59,9 +60,11 @@ contract Crowdsale is UUPSUpgradeable, AccessControlUpgradeable, OwnableUpgradea
     uint256 _endTime,
     uint256 _maxTokensToSell,
     uint256 _maxTokensToBuy,
-    address _paymentWallet
+    address _paymentWallet,
+    address _usdt
   ) external initializer {
     require(_oracle != address(0), "Zero aggregator address");
+    require(_usdt != address(0), "Zero USDT address");
     require(_startTime > block.timestamp && _endTime > _startTime, "Invalid time");
 
     __Pausable_init_unchained();
@@ -73,6 +76,8 @@ contract Crowdsale is UUPSUpgradeable, AccessControlUpgradeable, OwnableUpgradea
 
     baseDecimals = (10 ** 18);
     aggregatorInterface = Aggregator(_oracle);
+    USDTInterface = ERC20Upgradeable(_usdt);
+
     tokenPrice = _tokenPrice;
     startTime = _startTime;
     endTime = _endTime;
@@ -129,6 +134,25 @@ contract Crowdsale is UUPSUpgradeable, AccessControlUpgradeable, OwnableUpgradea
     uint256 excess = msg.value - metisAmount;
     if (excess > 0) sendValue(payable(_msgSender()), excess);
     emit TokensBought(_msgSender(), amount, address(0), metisAmount, usdPrice, block.timestamp);
+    return true;
+  }
+
+  /**
+   * @dev To buy into a presale using USDT
+   * @param amount No of tokens to buy
+   */
+  function buyWithUSDT(uint256 amount) external checkSaleState(amount) whenNotPaused returns (bool) {
+    uint256 usdPrice = amount * tokenPrice;
+    totalTokensSold += amount;
+    userDeposits[_msgSender()] += (amount * baseDecimals);
+    usdRaised += usdPrice;
+    uint256 ourAllowance = USDTInterface.allowance(_msgSender(), address(this));
+    require(usdPrice <= ourAllowance, "Make sure to add enough allowance");
+    (bool success, ) = address(USDTInterface).call(
+      abi.encodeWithSignature("transferFrom(address,address,uint256)", _msgSender(), paymentWallet, usdPrice)
+    );
+    require(success, "Token payment failed");
+    emit TokensBought(_msgSender(), amount, address(USDTInterface), usdPrice, usdPrice, block.timestamp);
     return true;
   }
 

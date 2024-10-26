@@ -43,10 +43,10 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
   // Info of each pool.
   PoolInfo[] public poolInfo;
   // Info of each user that stakes LP tokens.
-  mapping(address => mapping(uint256 => UserInfo)) public userInfo;
+  mapping(address user => mapping(uint256 => UserInfo)) public userInfo;
   // Total allocation points. Must be the sum of all allocation points in all pools.
   uint256 public totalAllocPoint;
-  // Depositor's money is only withdrawn after the locking block
+  // Depositor's money is only withdrawn after current block + the locking block
   uint256 public lockingBlock;
   // Total staked amount of users
   uint256 public totalStaked;
