@@ -45,11 +45,13 @@ contract Yoints is ERC20Votes, ERC20Permit, Ownable, AccessControl {
     super._update(from, to, value);
   }
 
+  /// @notice Be cautious when using this feature, as it may affect revenue share calculations from YapesStaking
   function mint(address to, uint256 amount) external onlyRole(ADMIN_ROLE) {
     require(totalSupply() + amount <= TOTAL_SUPPLY, "exceed total supply");
     super._mint(to, amount);
   }
 
+  /// @notice Be cautious when using this feature, as it may affect revenue share calculations from YapesStaking
   function burn(address from, uint256 amount) external onlyRole(ADMIN_ROLE) {
     super._burn(from, amount);
   }

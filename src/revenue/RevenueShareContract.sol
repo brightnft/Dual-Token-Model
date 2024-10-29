@@ -63,13 +63,11 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
     yapesStakingAddress = _yapesStakingAddress;
   }
 
-  function tip(address author, uint256 amount) external whenNotPaused {}
-
   /**
    * @dev To tip author using Yapes
    * @param amount No of Yapes tokens
    */
-  function tip(address authorAddress, uint256 amount, bytes calldata signature) external {
+  function tip(address authorAddress, uint256 amount, bytes calldata signature) external whenNotPaused {
     require(authorAddress != address(0), "invalid address");
     require(amount > 0, "invalid amount");
     bytes32 message = _getHashMsg(authorAddress, amount);
