@@ -2,8 +2,8 @@
 pragma solidity ^0.8.25;
 
 library Deployed {
-  uint256 public constant METIS_SEPOLIA = 97;
-  uint256 public constant METIS_ANDROMEDA = 660279;
+  uint256 public constant METIS_SEPOLIA = 59902;
+  uint256 public constant METIS_ANDROMEDA = 1088;
 
   function bp() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
