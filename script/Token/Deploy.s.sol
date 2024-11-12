@@ -14,13 +14,11 @@ contract YapesDeployScript is BaseScript {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);
 
-    // deploy bot prevention
-    // 1.
+    // 1. deploy bot prevention
     BotPrevention bp = new BotPrevention();
     console.log("BotPrevention is deployed to %s", address(bp));
 
-    // deploy yapes token
-    // 1.
+    // 2. deploy yapes token
     Yapes yapes = new Yapes(address(bp));
     console.log("Yapes is deployed to %s", address(yapes));
 

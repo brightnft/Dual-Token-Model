@@ -7,7 +7,7 @@ library Deployed {
 
   function bp() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0xf73AE159d0e7ed58a56FB0b6368f430C126EDdFA);
+      return address(0x5F0614F6Bd87Da34eB39f9242Fa57DbDBA910a98);
     }
 
     return address(0x0);
@@ -15,7 +15,7 @@ library Deployed {
 
   function yapesToken() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0x35C31EbbD9b2c6C5C0a0C1413d77706281bE407e);
+      return address(0xc08181aA5C0483BAd0C63Cd4f52bC584467e3f30);
     }
 
     return address(0x0);
