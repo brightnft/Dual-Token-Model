@@ -10,6 +10,8 @@ import { BotPrevention } from "../../src/BP/BotPrevention.sol";
 import { LiquidityPrevention } from "../../src/BP/LiquidityPrevention.sol";
 
 contract YapesDeployScript is BaseScript {
+  bytes32 public constant PROTECTED_ROLE = keccak256("PROTECTED_ROLE");
+
   function run() external {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);
@@ -21,6 +23,9 @@ contract YapesDeployScript is BaseScript {
     // 2. deploy yapes token
     Yapes yapes = new Yapes(address(bp));
     console.log("Yapes is deployed to %s", address(yapes));
+
+    // 3. grant role
+    bp.grantRole(PROTECTED_ROLE, address(yapes));
 
     vm.stopBroadcast();
   }
