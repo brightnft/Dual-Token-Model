@@ -11,6 +11,57 @@ contract BotPreventionActiveTradingScript is BaseScript {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);
 
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    bp.setActiveTrading(true);
+
+    vm.stopBroadcast();
+  }
+}
+
+contract BotPreventionAddWhitelistScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    bp.addWhitelist(Deployed.whitelist());
+
+    vm.stopBroadcast();
+  }
+}
+
+contract BotPreventionRemoveWhitelistScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    bp.removeWhitelist(Deployed.whitelist());
+
+    vm.stopBroadcast();
+  }
+}
+
+contract BotPreventionAddRoutersScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    bp.addRouters(Deployed.routers());
+
+    vm.stopBroadcast();
+  }
+}
+
+contract BotPreventionRemoveRoutersScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    bp.removeRouters(Deployed.routers());
+
     vm.stopBroadcast();
   }
 }
