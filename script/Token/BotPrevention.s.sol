@@ -6,6 +6,18 @@ import { BaseScript } from "../Base.s.sol";
 import { Deployed } from "../Deployed.s.sol";
 import { BotPrevention } from "../../src/BP/BotPrevention.sol";
 
+contract BotPreventionCheckDataScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    BotPrevention bp = BotPrevention(payable(Deployed.bp()));
+    console.log("isActiveTrading = %s", bp.isActiveTrading());
+
+    vm.stopBroadcast();
+  }
+}
+
 contract BotPreventionActiveTradingScript is BaseScript {
   function run() external {
     uint256 deployerPrivateKey = get_pk();

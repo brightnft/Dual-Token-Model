@@ -7,7 +7,7 @@ import { Deployed } from "../Deployed.s.sol";
 import { Yapes } from "../../src/tokens/Yapes.sol";
 import { Yoints } from "../../src/tokens/Yoints.sol";
 import { BotPrevention } from "../../src/BP/BotPrevention.sol";
-import { AddLiquidityPrevention } from "../../src/BP/AddLiquidityPrevention.sol";
+import { LiquidityPrevention } from "../../src/BP/LiquidityPrevention.sol";
 
 contract YapesDeployScript is BaseScript {
   function run() external {
@@ -31,16 +31,16 @@ contract YointsDeployScript is BaseScript {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);
 
-    // 1. deploy add liquidity prevention
+    // 1. deploy liquidity prevention
     // 1.1. deploy contract
-    AddLiquidityPrevention bp = new AddLiquidityPrevention();
-    console.log("AddLiquidityPrevention is deployed to %s", address(bp));
+    LiquidityPrevention lp = new LiquidityPrevention();
+    console.log("LiquidityPrevention is deployed to %s", address(lp));
 
     // 1.2. add Hecules routers
-    bp.addRouters(Deployed.routers());
+    lp.addRouters(Deployed.routers());
 
     // 2. deploy yoints token
-    Yoints yoints = new Yoints(address(bp));
+    Yoints yoints = new Yoints(address(lp));
     console.log("Yoints is deployed to %s", address(yoints));
 
     vm.stopBroadcast();

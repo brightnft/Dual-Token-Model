@@ -5,7 +5,7 @@ import { IPrevention } from "./interfaces/IPrevention.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { AccessControl } from "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract AddLiquidityPrevention is IPrevention, Ownable, AccessControl {
+contract LiquidityPrevention is IPrevention, Ownable, AccessControl {
   bytes32 public constant PROTECTED_ROLE = keccak256("PROTECTED_ROLE");
 
   mapping(address wallet => bool disable) public isBlacklist;
