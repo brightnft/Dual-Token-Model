@@ -13,6 +13,7 @@ contract YointsCheckDataScript is BaseScript {
     vm.startBroadcast(deployerPrivateKey);
 
     Yoints yoints = Yoints(payable(Deployed.yointsToken()));
+    console.log("totalSupply = %d", yoints.totalSupply());
 
     vm.stopBroadcast();
   }

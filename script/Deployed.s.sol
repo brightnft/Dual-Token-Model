@@ -7,7 +7,7 @@ library Deployed {
 
   function bp() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0xe69A1F8462727a1c9c15bEA538caFE4B7963C4A5);
+      return address(0xf848cd5EaD8F7bee0Cc87553D170891b13B0fc97);
     }
 
     return address(0x0);
@@ -15,7 +15,7 @@ library Deployed {
 
   function lp() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0x0);
+      return address(0xd7B833b5bBd59C00f020c72d9B7EABE5C663d7bb);
     }
 
     return address(0x0);
@@ -23,7 +23,7 @@ library Deployed {
 
   function yapesToken() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0x2ead3DDBbaE6147D53C1d5423a684530d568802C);
+      return address(0xdd38F7e58621A25F616F03851440f8d932D58753);
     }
 
     return address(0x0);
@@ -31,7 +31,15 @@ library Deployed {
 
   function yointsToken() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0x2db66F65352872Bb679501324F4bC6264A7f496c);
+      return address(0x663A16A1c4Bb84A5f43a7CF4b761Feb2cC4c64b5);
+    }
+
+    return address(0x0);
+  }
+
+  function yapesStaking() public view returns (address) {
+    if (block.chainid == METIS_SEPOLIA) {
+      return address(0x530e61D5201c5683Ce443f8fdc6Bb46b41066489);
     }
 
     return address(0x0);
@@ -39,7 +47,7 @@ library Deployed {
 
   function yapesYieldFarming() public view returns (address) {
     if (block.chainid == METIS_SEPOLIA) {
-      return address(0x6858a6c3484b7b033B748261e550FC20c479b063);
+      return address(0x0);
     }
 
     return address(0x0);

@@ -21,6 +21,7 @@ contract Yoints is ERC20Votes, ERC20Permit, Ownable, AccessControl {
   uint256 public constant TOTAL_SUPPLY = 100_000_000 * (10 ** 18);
 
   constructor(address bpAddr_) ERC20("Yoints Token", "YOINTS") ERC20Permit("Yoints Token") Ownable(_msgSender()) {
+    _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _grantRole(ADMIN_ROLE, _msgSender());
 
     bpAddr = bpAddr_;

@@ -32,6 +32,8 @@ contract YapesDeployScript is BaseScript {
 }
 
 contract YointsDeployScript is BaseScript {
+  bytes32 public constant PROTECTED_ROLE = keccak256("PROTECTED_ROLE");
+
   function run() external {
     uint256 deployerPrivateKey = get_pk();
     vm.startBroadcast(deployerPrivateKey);
@@ -47,6 +49,9 @@ contract YointsDeployScript is BaseScript {
     // 2. deploy yoints token
     Yoints yoints = new Yoints(address(lp));
     console.log("Yoints is deployed to %s", address(yoints));
+
+    // 3. grant role
+    lp.grantRole(PROTECTED_ROLE, address(yoints));
 
     vm.stopBroadcast();
   }
