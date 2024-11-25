@@ -72,6 +72,7 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
     rewardPerBlock = _rewardPerBlock;
     lockingBlock = 50400; // 7 days
 
+    _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
     _grantRole(ADMIN_ROLE, _msgSender());
 
     // staking pool

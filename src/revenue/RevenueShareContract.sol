@@ -21,7 +21,7 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
   IERC20 public yapes;
 
   EnumerableSet.AddressSet private _signers;
-  mapping(bytes32 => bool) public _usedNonce;
+  mapping(bytes32 => bool) public usedNonce;
 
   event Tip(address sender, address author, uint256 amount);
 
@@ -58,6 +58,16 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
     fee = _fee;
   }
 
+  function addSigner(address _signer) external onlyOwner {
+    require(_signer != address(0), "invalid address");
+    _signers.add(_signer);
+  }
+
+  function removeSigner(address _signer) external onlyOwner {
+    require(_signer != address(0), "invalid address");
+    _signers.remove(_signer);
+  }
+
   function setYapesStakingAddress(address _yapesStakingAddress) external onlyOwner {
     require(_yapesStakingAddress != address(0), "invalid address");
     yapesStakingAddress = _yapesStakingAddress;
@@ -65,12 +75,19 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
 
   /**
    * @dev To tip author using Yapes
-   * @param amount No of Yapes tokens
+   * @param authorAddress address of author will receive yapes tip
+   * @param amount no of amount of Yapes tokens
+   * @param timestamp unix timestamp in seconds
    */
-  function tip(address authorAddress, uint256 amount, bytes calldata signature) external whenNotPaused {
+  function tip(
+    address authorAddress,
+    uint256 amount,
+    uint256 timestamp,
+    bytes calldata signature
+  ) external whenNotPaused {
     require(authorAddress != address(0), "invalid address");
     require(amount > 0, "invalid amount");
-    bytes32 message = _getHashMsg(authorAddress, amount);
+    bytes32 message = _getHashMsg(authorAddress, amount, timestamp);
     _validateSignature(message, signature);
 
     // take fee
@@ -90,13 +107,17 @@ contract RevenueShareContract is Initializable, UUPSUpgradeable, OwnableUpgradea
     emit Tip(_msgSender(), authorAddress, amount);
   }
 
-  function _getHashMsg(address authorAddress, uint256 amount) internal view returns (bytes32 message) {
-    message = keccak256(abi.encodePacked(authorAddress, amount, _msgSender()));
+  function _getHashMsg(
+    address authorAddress,
+    uint256 amount,
+    uint256 timestamp
+  ) internal view returns (bytes32 message) {
+    message = keccak256(abi.encodePacked(authorAddress, amount, timestamp, _msgSender()));
   }
 
   function _validateSignature(bytes32 message, bytes calldata signature) internal {
-    require(_usedNonce[message] == false, "already used");
-    _usedNonce[message] = true;
+    require(usedNonce[message] == false, "already used");
+    usedNonce[message] = true;
     _signers.requireValidSignature(message, signature);
   }
 

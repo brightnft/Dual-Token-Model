@@ -6,6 +6,8 @@ import { BaseScript } from "../Base.s.sol";
 import { Deployed } from "../Deployed.s.sol";
 import { YapesStaking } from "../../src/revenue/YapesStaking.sol";
 import { Yapes } from "../../src/tokens/Yapes.sol";
+import { Yoints } from "../../src/tokens/Yoints.sol";
+
 import { iOVM_L1BlockNumber } from "../../src/yield/iOVM_L1BlockNumber.sol";
 
 contract YapesStakingScript is BaseScript {
@@ -34,8 +36,17 @@ contract YapesStakingCheckDataScript is BaseScript {
     vm.startBroadcast(deployerPrivateKey);
 
     YapesStaking yapesStaking = YapesStaking(payable(Deployed.yapesStaking()));
-    console.log("yapes = %s", address(yapesStaking.yapesToken()));
-    console.log("yoints = %s", address(yapesStaking.yointsToken()));
+    Yoints yoints = Yoints(payable(Deployed.yointsToken()));
+    // console.log("yapes = %s", address(yapesStaking.yapesToken()));
+    // console.log("yoints = %s", address(yapesStaking.yointsToken()));
+
+    // iOVM_L1BlockNumber ovm = iOVM_L1BlockNumber(address(0x4200000000000000000000000000000000000013));
+    // console.log("%d", ovm.getL1BlockNumber());
+
+    uint256 amount = 100 * 1e18;
+    yoints.approve(address(Deployed.yapesStaking()), amount);
+
+    yapesStaking.unstake(amount);
 
     vm.stopBroadcast();
   }
