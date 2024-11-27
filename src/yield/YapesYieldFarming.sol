@@ -6,7 +6,7 @@ import { PausableUpgradeable } from "@openzeppelin/contracts-upgradeable/utils/P
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { UUPSUpgradeable } from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import { ArbSys } from "./ArbSys.sol";
+import { iOVM_L1BlockNumber } from "./iOVM_L1BlockNumber.sol";
 
 contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, PausableUpgradeable {
   using SafeERC20 for IERC20;
@@ -14,7 +14,7 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
   bytes32 private constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
 
   // Metis precompile, used to send messages to L1
-  ArbSys constant arbsys = ArbSys(address(0x4200000000000000000000000000000000000013));
+  iOVM_L1BlockNumber constant arbsys = iOVM_L1BlockNumber(address(0x4200000000000000000000000000000000000013));
 
   // Info of each user.
   struct UserInfo {
@@ -43,7 +43,7 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
   // Info of each pool.
   PoolInfo[] public poolInfo;
   // Info of each user that stakes LP tokens.
-  mapping(address user => mapping(uint256 => UserInfo)) public userInfo;
+  mapping(address user => mapping(uint256 poolId => UserInfo)) public userInfo;
   // Total allocation points. Must be the sum of all allocation points in all pools.
   uint256 public totalAllocPoint;
   // Depositor's money is only withdrawn after current block + the locking block
@@ -166,8 +166,8 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
     uint256 accCakePerShare = pool.accCakePerShare;
     uint256 lpSupply = pool.lpToken.balanceOf(address(this));
 
-    if (arbsys.arbBlockNumber() > pool.lastRewardBlock && lpSupply != 0) {
-      uint256 multiplier = getMultiplier(_pid, pool.lastRewardBlock, arbsys.arbBlockNumber());
+    if (arbsys.getL1BlockNumber() > pool.lastRewardBlock && lpSupply != 0) {
+      uint256 multiplier = getMultiplier(_pid, pool.lastRewardBlock, arbsys.getL1BlockNumber());
       uint256 cakeReward = (multiplier * rewardPerBlock * pool.allocPoint) / totalAllocPoint;
       accCakePerShare = accCakePerShare + ((cakeReward * 1e12) / lpSupply);
     }
@@ -177,25 +177,25 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
   // Update reward variables of the given pool to be up-to-date.
   function updatePool(uint256 _pid) public {
     PoolInfo storage pool = poolInfo[_pid];
-    if (arbsys.arbBlockNumber() <= pool.lastRewardBlock) {
+    if (arbsys.getL1BlockNumber() <= pool.lastRewardBlock) {
       return;
     }
     uint256 lpSupply = pool.lpToken.balanceOf(address(this));
     if (lpSupply == 0) {
-      pool.lastRewardBlock = arbsys.arbBlockNumber();
+      pool.lastRewardBlock = arbsys.getL1BlockNumber();
       return;
     }
 
-    uint256 multiplier = getMultiplier(_pid, pool.lastRewardBlock, arbsys.arbBlockNumber());
+    uint256 multiplier = getMultiplier(_pid, pool.lastRewardBlock, arbsys.getL1BlockNumber());
     uint256 cakeReward = (multiplier * rewardPerBlock * pool.allocPoint) / totalAllocPoint;
     pool.accCakePerShare = pool.accCakePerShare + ((cakeReward * 1e12) / lpSupply);
-    pool.lastRewardBlock = arbsys.arbBlockNumber();
+    pool.lastRewardBlock = arbsys.getL1BlockNumber();
   }
 
   // Update the total allocation points to be accurate
-  function unwindPool(uint256 _pid) public {
+  function unwindPool(uint256 _pid) external {
     PoolInfo storage pool = poolInfo[_pid];
-    require(arbsys.arbBlockNumber() > pool.lastRewardBlock, "not expired");
+    require(arbsys.getL1BlockNumber() > pool.lastRewardBlock, "not expired");
 
     totalAllocPoint -= pool.allocPoint;
   }
@@ -213,7 +213,7 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
     PoolInfo storage pool = poolInfo[_pid];
     UserInfo storage user = userInfo[_msgSender()][_pid];
 
-    require(arbsys.arbBlockNumber() < pool.bonusEndBlock, "end time");
+    require(arbsys.getL1BlockNumber() < pool.bonusEndBlock, "end time");
     require(!user.inBlackList, "in black list");
 
     updatePool(_pid);
@@ -231,7 +231,7 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
       pool.lpToken.safeTransferFrom(_msgSender(), address(this), amount);
     }
     user.rewardDebt = (user.amount * pool.accCakePerShare) / 1e12;
-    user.lastDeposit = arbsys.arbBlockNumber();
+    user.lastDeposit = arbsys.getL1BlockNumber();
 
     emit Deposit(_msgSender(), amount);
   }
@@ -242,8 +242,8 @@ contract YapesYieldFarming is UUPSUpgradeable, AccessControlUpgradeable, Pausabl
     UserInfo storage user = userInfo[_msgSender()][_pid];
 
     require(user.amount >= _amount, "withdraw: not good");
-    if (arbsys.arbBlockNumber() <= pool.bonusEndBlock) {
-      require(arbsys.arbBlockNumber() >= user.lastDeposit + lockingBlock, "must over 7 days");
+    if (arbsys.getL1BlockNumber() <= pool.bonusEndBlock) {
+      require(arbsys.getL1BlockNumber() >= user.lastDeposit + lockingBlock, "must over 7 days");
     }
 
     updatePool(_pid);
