@@ -35,3 +35,4 @@ wrap_comments = true
 [rpc_endpoints]
 metis_sepolia = "https://sepolia.metisdevops.link"
 metis_andromeda = "https://andromeda.metis.io/?owner=1088"
+op_sepolia = "	https://sepolia.optimism.io"

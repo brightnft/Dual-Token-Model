@@ -13,11 +13,11 @@ contract YapesYieldFarmingDeployScript is BaseScript {
     vm.startBroadcast(deployerPrivateKey);
 
     // configuration
-    address depositToken = Deployed.yapesToken();
+    address depositToken = Deployed.lpToken(); // LP Token or Yoints Token
     address rewardToken = Deployed.yapesToken();
-    uint256 rewardPerBlock = 10_000_000;
-    uint256 startBlock = 0;
-    uint256 endBlock = 1;
+    uint256 rewardPerBlock = 4.62962962963 * 10**18;
+    uint256 startBlock = 7174000;
+    uint256 endBlock = 7390000;
 
     Options memory opts;
     opts.unsafeSkipAllChecks = true;

@@ -56,3 +56,15 @@ contract YapesClaimOverflowScript is BaseScript {
     vm.stopBroadcast();
   }
 }
+
+contract YapesSendTokenScript is BaseScript {
+  function run() external {
+    uint256 deployerPrivateKey = get_pk();
+    vm.startBroadcast(deployerPrivateKey);
+
+    Yapes yapes = Yapes(payable(Deployed.yapesToken()));
+    yapes.transfer(address(0x281853734781e1e57A0a0D3a7198587A8E09b7bC), 100_000 * 10 ** 18);
+
+    vm.stopBroadcast();
+  }
+}
